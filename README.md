@@ -12,6 +12,7 @@
 
 ## where to run app (dash)
 \app2.py
+
 When you run the app2.py, an address(URL) will be created and you should open this address so you can use the web.
 
 ## Let's say you've already opened the URL
@@ -24,8 +25,8 @@ Dropdown: **[Footage Selection]**
 Dropdown: **[Category of Lost Items]**
         --> You can select the type of lost item in the drop-down menu.
         
-**Upload Photo and Change File Name:**
-        --> Upload multiple full-body photos, name them each time you upload, and press the button to [SUBMIT].
+Upload Photo and Change File Name:
+        --> Upload multiple **full-body photos**, name them each time you upload, and press the button to **[SUBMIT]**.
         
 Button: **[DELETE ALL UPLOADED PHOTOS]**
         --> By pressing this, you can delete all uploaded photos.
