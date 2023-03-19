@@ -15,9 +15,6 @@
 When you run the app2.py, an address(URL) will be created and you should open this address so you can use the web.
 
 ## Let's say you've already opened the URL
-Button: **[RUN BACKEND] **
-        --> By pressing this, you can run the backend and output a screenshot of the owner and lost belongings.
-        
 Button: **[RUN BACKEND]**
         --> By pressing this, you can run the backend and output a screenshot of the owner and lost belongings.
         
