@@ -3,6 +3,7 @@ from deep_sort.deep_sort import DeepSort
 import torch
 import cv2
 import math
+import numpy as np
 
 palette = (2**11 - 1, 2**15 - 1, 2**20 - 1)
 cfg = get_config()
@@ -58,7 +59,8 @@ def plot_bboxes(
     bboxes,
     line_thickness=None,
     target_detector=None,
-    track_id=None
+    track_id=None,
+    trackitem_id=None,
 ):
 
     tl = (
@@ -145,10 +147,15 @@ def plot_bboxes(
         y_gravity_center = (y1 + y2) / 2
         return image, (x_gravity_center, y_gravity_center)
 
-    def render_suitcase(image, bbox):
+    def render_suitcase(image, bbox, target=False):
         (x1, y1, x2, y2, cls_id, pos_id) = bbox
-
-        color = (0, 0, 255)
+        if target:
+            color = (0, 0, 255)
+        else:
+            color = (255,255,0)
+        text = "{}-{}".format(cls_id, pos_id)
+        if target:
+            text = text + "ITEM"
         c1, c2 = (x1, y1), (x2, y2)
         cv2.rectangle(image, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
         tf = max(tl - 1, 1)  # font thickness
@@ -157,7 +164,7 @@ def plot_bboxes(
         cv2.rectangle(image, c1, c2, color, -1, cv2.LINE_AA)  # filled
         cv2.putText(
             image,
-            "{}-{}".format(cls_id,pos_id),
+            text,
             (c1[0], c1[1] - 2),
             0,
             tl / 3,
@@ -171,8 +178,6 @@ def plot_bboxes(
 
     person_gravity_center = None
     suitcase_gravity_center = None
-    import pytest
-    # pytest.set_trace()
     for bbox in bboxes:
         # cls_id can be only person or suitcase
         (x1, y1, x2, y2, cls_id, pos_id) = bbox
@@ -180,10 +185,11 @@ def plot_bboxes(
             image, person_gravity_center = render_person(image, bbox, target=True)
         elif cls_id == "person" and pos_id != track_id:
             image, _ = render_person(image, bbox, target=False)
-        elif cls_id == "suitcase":
-            #print("suitcase found suitcase found ")
-            image, suitcase_gravity_center = render_suitcase(image, bbox)
-
+        elif cls_id == "backpack":
+     #   elif cls_id == "backpack" and pos_id == trackitem_id:
+     #       image, suitcase_gravity_center = render_suitcase(image, bbox, target=True)
+     #   elif cls_id == "backpack" and pos_id != trackitem_id:
+            image, suitcase_gravity_center = render_suitcase(image, bbox, target=False)
     image = check_lost(image, person_gravity_center, suitcase_gravity_center, target_detector)
     # facenet: Please add facenet id to this text label.
 
@@ -237,7 +243,40 @@ def update_tracker(target_detector, image, draw=True, target_track_id=None):
             image, bboxes2draw, line_thickness=None, target_detector=target_detector, track_id=target_track_id
         )
 
-        return image, new_faces, face_bboxes
+        return image, current_ids, face_bboxes
     else:
         # _, bboxes = target_detector.detect(image)
         pass
+
+
+def list_txt(path, list=None):
+    '''
+    :param path: 储存list的位置
+    :param list: list数据
+    :return: None/re将txt读取为list
+             当path参数和list都有输入时为保存模式将list保存为txt
+    '''
+    if list != None:
+        file = open(path, 'w')
+        file.write(str(list))
+        file.close()
+        return None
+    else:
+        file = open(path, 'r')
+        rdlist = eval(file.read())
+        file.close()
+        return rdlist
+
+def _pdist(a, b, single_embedding):
+    new = np.asarray(a)
+    known = np.asarray(b)
+    if len(new) == 0 or len(known) == 0:
+        return np.zeros((len(new), len(known)))
+    new2, known2 = np.square(new).sum(axis=1), np.square(known).sum(axis=1)
+    r2 = -2. * np.dot(new, known.T) + new2[:, None] + known2[None, :]
+    r2 = np.clip(r2, 0., float(np.inf))
+    return r2
+
+def _nn_euclidean_distance(x, y, single_embedding):
+    distances = _pdist(x, y, single_embedding)
+    return np.maximum(0.0, distances.min(axis=0))
