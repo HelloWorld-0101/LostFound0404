@@ -115,7 +115,7 @@ class Detector(baseDet):
                 for *x, conf, cls_id in det:
                     a = conf.numpy()
                     lbl = self.names[int(cls_id)]
-                    if not lbl in self.item_to_detect or ((lbl == 'person') & (a < 0.8)):
+                    if not lbl in self.item_to_detect or ((lbl == 'person') & (a < 0.75)):
                         continue
                     x1, y1 = int(x[0]), int(x[1])
                     x2, y2 = int(x[2]), int(x[3])
